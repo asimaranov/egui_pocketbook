@@ -122,6 +122,7 @@ impl AppRunner {
 
 impl inkview_sys::EventHandler for AppRunner{
     fn handle_event(&mut self, event: Event, par1: i32, par2: i32) -> i32 {
+        let mut ctx = self.pocketbook_backend.egui_ctx.clone();
         match event{
             c_api::Event::KEYPRESS => {
 
@@ -138,11 +139,11 @@ impl inkview_sys::EventHandler for AppRunner{
                             device_id: TouchDeviceId(0),
                             id: TouchId(0),
                             phase: TouchPhase::Start,
-                            pos: Pos2{ x: par1 as f32/self.ctx.pixels_per_point(), y: par2 as f32/self.ctx.pixels_per_point() },
+                            pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
                             force: 0.0
                         },
                              Event::PointerButton {
-                                 pos: Pos2{ x: par1 as f32/self.ctx.pixels_per_point(), y: par2 as f32/self.ctx.pixels_per_point() },
+                                 pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
                                  button: PointerButton::Primary,
                                  pressed: true,
                                  modifiers: Default::default()
@@ -158,11 +159,11 @@ impl inkview_sys::EventHandler for AppRunner{
                                 device_id: TouchDeviceId(0),
                                 id: TouchId(0),
                                 phase: TouchPhase::End,
-                                pos: Pos2{ x: par1 as f32/self.ctx.pixels_per_point(), y: par2 as f32/self.ctx.pixels_per_point() },
+                                pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
                                 force: 0.0
                             },
                             Event::PointerButton {
-                                pos: Pos2{ x: par1 as f32/self.ctx.pixels_per_point(), y: par2 as f32/self.ctx.pixels_per_point() },
+                                pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
                                 button: PointerButton::Primary,
                                 pressed: false,
                                 modifiers: Default::default()
@@ -171,7 +172,7 @@ impl inkview_sys::EventHandler for AppRunner{
                         ]
                     }
                     c_api::Event::POINTERDRAG => {
-                        vec![Event::PointerMoved(Pos2{ x: par1 as f32/self.ctx.pixels_per_point(), y: par2 as f32/self.ctx.pixels_per_point() })]}
+                        vec![Event::PointerMoved(Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() })]}
 
                     _=>vec![]
                 };
@@ -186,11 +187,11 @@ impl inkview_sys::EventHandler for AppRunner{
                     modifiers: Default::default(),
                     events: events,
                 };
-                self.ctx.begin_frame(raw_input);
+                ctx.begin_frame(raw_input);
 
-                self.app.draw(&mut self.ctx);
+                self.app.draw(&mut ctx);
 
-                let (output, shapes) = self.ctx.end_frame();
+                let (output, shapes) = ctx.end_frame();
                 self.draw_shapes(shapes);
                 //
                 if event == c_api::Event::SHOW{
