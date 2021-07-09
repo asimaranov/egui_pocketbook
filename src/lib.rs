@@ -5,6 +5,7 @@ use std::sync::{Mutex, Arc};
 mod app;
 mod backend;
 mod texture_allocator;
+mod storage;
 
 pub fn start(mut app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> () {
     let backend = PocketbookBackend::new();
@@ -12,7 +13,7 @@ pub fn start(mut app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> 
     unsafe { c_api::OpenScreen() }
 
     //let c = pb_ui::UiComponent{ pos: (), size: (), data: ()};
-    let h: Arc<Mutex<dyn inkview_sys::EventHandler>> = Arc::new(Mutex::new(MyHandler::new()));
+    let h: Arc<Mutex<dyn inkview_sys::EventHandler>> = Arc::new(Mutex::new(runner));
 
 
     inkview_sys::main(&h);
