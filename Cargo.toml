@@ -17,8 +17,8 @@ repository = "https://github.com/asimaranov/egui_pocketbook"
 
 [dependencies]
 inkview-sys = "0.1.1"
-egui = "*"
-epi = "*"
+egui = "0.13.1"
+epi = "0.13.0"
 
 
 [lib]
