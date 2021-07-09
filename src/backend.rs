@@ -104,7 +104,7 @@ impl AppRunner {
                 prefer_dark_mode: None,
                 cpu_usage: None,
                 seconds_since_midnight: None,
-                native_pixels_per_point: None
+                native_pixels_per_point: Some(3.0)
             },
             tex_allocator: &mut texture_allocator,
             #[cfg(feature = "http")]
@@ -165,7 +165,7 @@ impl AppRunner {
 
 impl inkview_sys::EventHandler for AppRunner{
     fn handle_event(&mut self, event: c_api::Event, par1: i32, par2: i32) -> i32 {
-        let mut ctx = self.pocketbook_backend.egui_ctx.clone();
+
         match event{
             c_api::Event::KEYPRESS => {
 
@@ -175,6 +175,8 @@ impl inkview_sys::EventHandler for AppRunner{
             c_api::Event::SHOW | c_api::Event::POINTERDOWN | c_api::Event::POINTERUP | c_api::Event::POINTERDRAG => {
                 if event == c_api::Event::SHOW{
                     inkview_sys::set_panel_type(c_api::PanelType(0));
+                    self.pocketbook_backend.egui_ctx.set_visuals(egui::Visuals::dark());
+
                 }
                 let events = match event{
                     c_api::Event::POINTERDOWN => {
@@ -182,11 +184,11 @@ impl inkview_sys::EventHandler for AppRunner{
                             device_id: TouchDeviceId(0),
                             id: TouchId(0),
                             phase: TouchPhase::Start,
-                            pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
+                            pos: Pos2{ x: par1 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point(), y: par2 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point() },
                             force: 0.0
                         },
                              Event::PointerButton {
-                                 pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
+                                 pos: Pos2{ x: par1 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point(), y: par2 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point() },
                                  button: PointerButton::Primary,
                                  pressed: true,
                                  modifiers: Default::default()
@@ -202,11 +204,11 @@ impl inkview_sys::EventHandler for AppRunner{
                                 device_id: TouchDeviceId(0),
                                 id: TouchId(0),
                                 phase: TouchPhase::End,
-                                pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
+                                pos: Pos2{ x: par1 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point(), y: par2 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point() },
                                 force: 0.0
                             },
                             Event::PointerButton {
-                                pos: Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() },
+                                pos: Pos2{ x: par1 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point(), y: par2 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point() },
                                 button: PointerButton::Primary,
                                 pressed: false,
                                 modifiers: Default::default()
@@ -215,10 +217,11 @@ impl inkview_sys::EventHandler for AppRunner{
                         ]
                     }
                     c_api::Event::POINTERDRAG => {
-                        vec![Event::PointerMoved(Pos2{ x: par1 as f32/ctx.pixels_per_point(), y: par2 as f32/ctx.pixels_per_point() })]}
+                        vec![Event::PointerMoved(Pos2{ x: par1 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point(), y: par2 as f32/self.pocketbook_backend.egui_ctx.pixels_per_point() })]}
 
                     _=>vec![]
                 };
+
                 let raw_input: egui::RawInput = egui::RawInput {
                     scroll_delta: Vec2 { x: 0.0, y: 0.0 },
                     zoom_delta: 0.0,
@@ -254,13 +257,14 @@ impl inkview_sys::EventHandler for AppRunner{
                 }
                     .build();
 
-                self.app.update(&ctx, &mut frame);
 
-                let (output, shapes) = ctx.end_frame();
+
+                self.app.update(&self.pocketbook_backend.egui_ctx, &mut frame);
+
+                let (output, shapes) = self.pocketbook_backend.end_frame();
                 self.draw_shapes(shapes);
-                self.pocketbook_backend.end_frame();
-                //
-                if event == c_api::Event::SHOW{
+
+                if event == c_api::Event::SHOW {
                     inkview_sys::full_update();
                 }
 

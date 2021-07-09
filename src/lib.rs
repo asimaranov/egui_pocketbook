@@ -1,6 +1,7 @@
 use crate::backend::{PocketbookBackend, AppRunner};
 use inkview_sys::c_api;
 use std::sync::{Mutex, Arc};
+use egui::Response;
 
 mod app;
 mod backend;
@@ -17,4 +18,17 @@ pub fn start(mut app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> 
 
 
     inkview_sys::main(&h);
+}
+
+pub fn handle_component_update(response: Response) -> Response{
+    if response.changed(){
+
+        inkview_sys::partial_update((response.rect.min.x * response.ctx.pixels_per_point()) as i32,
+                                    (response.rect.min.y * response.ctx.pixels_per_point()) as i32,
+                                    (response.rect.width() * response.ctx.pixels_per_point()) as i32,
+                                    (response.rect.height() * response.ctx.pixels_per_point()) as i32,
+
+        );
+    }
+    return response
 }
